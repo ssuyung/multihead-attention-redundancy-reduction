@@ -34,4 +34,4 @@ for bar in bars:
     height = bar.get_height()
     plt.text(bar.get_x() + bar.get_width() / 2, height, str(height),
              ha='center', va='bottom', fontsize=10)
-plt.savefig('results/plots/histogram.png', format='png', dpi=300)
+plt.savefig('../results/plots/histogram.png', format='png', dpi=300)
