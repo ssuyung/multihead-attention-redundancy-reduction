@@ -20,3 +20,21 @@ Print heads with the top 10 highest retrieval scores in Llama 3.2 1B Instruct.
 ```
 python print_top_head.py
 ```
+
+### needle_in_haystack_with_mask.py
+Mask the bottom k heads and compute the retrieval score with different context lengths and needle depths.
+
+#### Usage
+```
+python needle_in_haystack_with_mask.py --mask_top 30 --s 0 --e 3000 --model_name meta-llama/Llama-3.2-1B-Instruct
+```
+-- mask_top: number of heads to be masked with the least retrieval score
+
+### CreateVizFromLLMTesting.py
+Create heatmap of scores of a model in Needle in a Haystack test with different context lengths and needle depths.
+
+Change `model_name` in file to the corresponding folder name of the stored results 
+#### Usage
+```
+python CreateVizFromLLMTesting.py
+```
