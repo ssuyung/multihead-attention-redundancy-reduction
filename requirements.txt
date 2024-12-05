@@ -1,0 +1,13 @@
+transformers
+accelerate
+bitsandbytes>0.37.0
+trl
+peft
+datasets
+torch
+matplotlib
+numpy
+pandas
+scipy
+tqdm
+scikit-learn
