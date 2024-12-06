@@ -53,7 +53,9 @@ def update_params(model, custom_model, config, layer_id=15):
     filtered_pretrained_dict_k     = _update_k_weights(config.num_key_value_heads, layer_id, model_dict, custom_model_dict)
     filtered_pretrained_dict_v     = _update_v_weights(config.num_key_value_heads, layer_id, model_dict, custom_model_dict)
 
-    custom_model_dict.update(filtered_pretrained_dict)
+    custom_model_dict.update(filtered_pretrained_dict_other)
+    custom_model_dict.update(filtered_pretrained_dict_k)
+    custom_model_dict.update(filtered_pretrained_dict_v)
     custom_model.load_state_dict(custom_model_dict)
 
 
@@ -63,7 +65,6 @@ def _copy_params_wo_kv(model_dict=None, custom_model_dict=None):
         k: v for k, v in model_dict.items() if k in custom_model_dict and 'self_attn.k_proj' not in k and 'self_attn.v_proj' not in k
     }
     return filtered_pretrained_dict
-
 
 
 def _update_k_weights(n=16, layer_id=15, model_dict=None, custom_model_dict=None):
@@ -78,8 +79,6 @@ def _update_k_weights(n=16, layer_id=15, model_dict=None, custom_model_dict=None
             k: v[::2, :] for k, v in model_dict.items() if k in custom_model_dict and f'[{layer_id}].self_attn.k_proj'in k
         }
     return filtered_pretrained_dict
-
-    
 
 
 def _update_v_weights(n=16, layer_id=15, model_dict=None, custom_model_dict=None):
@@ -123,5 +122,7 @@ def run_model(model, tokenizer, messages, max_new_tokens=50, verbose=False):
 def build_custom_attn_model(model, layer_id=15, config=None):
     cust_model = model
     cust_model.model.layers[layer_id].self_attn = CustomLlamaAttention(config, layer_id).cuda()
+    update_params(model, cust_model, config, layer_id=15)
+    return cust_model
 
 
