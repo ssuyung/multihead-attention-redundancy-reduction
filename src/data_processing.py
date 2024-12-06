@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from ..utils.data_utils import process_row
+from utils.data_utils import process_row
 
 
 def import_data(seed, train_size, valid_size, test_size):

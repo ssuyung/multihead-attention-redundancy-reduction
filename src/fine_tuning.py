@@ -1,5 +1,5 @@
 import yaml
-from ..utils.data_utils import instructions_formatting_function
+from utils.data_utils import instructions_formatting_function
 from peft import LoraConfig
 from transformers import TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM

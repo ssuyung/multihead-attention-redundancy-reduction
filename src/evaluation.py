@@ -1,5 +1,5 @@
 from tqdm.auto import tqdm
-from model import run_model
+from src.model import run_model
 from sklearn.metrics import accuracy_score
 
 
