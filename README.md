@@ -1,123 +1,101 @@
-# cs263_final
+# CS 263 NLP Final Project: Selective Attention: Reducing Redundancy in Multi-Head Mechanisms
 
-NLP Final Project: Investigating Attention Mechanisms in Large Language Models
+In this paper, we discussed the meaning of the attention parameters and their contribution to the final output. We reduced the model size according to the downstream tasks like multi-NLI and needle in a haystack dataset. Our experiments indicated the comparable performance of different sizes of groups in the final layer of GQA, suggesting that lowering the model size with few-shot fine-tuning can recover the performance. Another finding is that the retrieval score calculated in each head would be biased by different layer objectives. With the few shots fine-tuning on a small amount of data, all the parameters are essential to the specific downstream tasks. To achieve the aim of this paper to reduce the model parameters on downstream tasks for fine-tuning and inference, future works like enhancing query-grouping logic, refining retrieval mechanisms, and expanding applications are proposed for further experiments.   
 
-This project explores how different attention mechanisms affect the performance of large language models (LLMs) and examines the impact of fine-tuning on these mechanisms. We use heatmap visualizations to analyze and interpret the attention mask behavior across various experiments.
+## Setting Up the Code Environment
 
-## Table of Contents
-	•	Project Overview
-	•	Repository Structure
-	•	Getting Started
-	•	Usage
-	•	Experiments
-	•	Results
-	•	Contributing
+### Prerequisites
+	•	Python 3.8 or higher
+	•	Virtual environment tool (recommended: venv or conda)
 
-### Project Overview
-
-Attention mechanisms are at the core of most modern NLP models, influencing the model’s ability to learn contextual relationships within sequences. In this project, we:
-
-	1.	Investigate different attention mechanisms and their effects on model performance.
-	2.	Experiment with fine-tuning to assess changes in attention behavior.
-	3.	Visualize and analyze attention heatmaps to gain insights into model focus and interpretability.
-
-### Repository Structure
+### Steps to Set Up
+1.	Clone this repository:
+```bash
+git clone https://github.com/chrischung0327/cs263_final.git
+cd cs263_final
 ```
-cs263_final/
-├── README.md                 # Project introduction, goals, and structure
-├── CONTRIBUTING.md           # Contribution guidelines
-├── requirements.txt          # Dependencies required for running the project
-├── main.py                   # Main script to run the project
-├── src/                      # Source code for project-specific functions and modules
-│   ├── __init__.py           # Initialize the src module
-│   ├── data_processing.py    # Data loading and preprocessing functions
-│   ├── model.py              # Model architecture and related functions
-│   ├── evaluation.py         # Evaluation metrics and analysis functions
-│   └── attention_mechanisms/ # Folder for different attention mechanism modules
-│       ├── self_attention.py
-│       └── cross_attention.py
-├── utils/                    # Helper functions
-│   ├── logging_utils.py      # Functions to log experiment parameters and metrics
-│   ├── plot_utils.py         # Functions to create heatmaps and other visualizations
-│   └── data_utils.py         # Data loading and processing helpers
-├── experiment_results/       # Experiment results and related notebooks
-│   ├── fine_tuning/
-│   │   ├── experiment1_finetune.ipynb
-│   │   └── experiment2_finetune.ipynb
-│   ├── attention_variants/
-│   │   ├── experiment1_self_attention.ipynb
-│   │   └── experiment2_cross_attention.ipynb
-│   └── analysis/
-│       ├── heatmap_visualization.ipynb
-│       └── result_comparison.ipynb
-├── configs/                  # Configuration files for reproducibility
-│   ├── base_config.yaml      # Common settings shared across experiments
-│   ├── fine_tuning/
-│   │   ├── exp1_config.yaml
-│   │   └── exp2_config.yaml
-│   └── attention_mechanisms/
-│       ├── self_attention.yaml
-│       └── cross_attention.yaml
-├── data/                     # Folder for sample data and dataset setup instructions
-│   ├── sample_data.csv       # A small dataset for testing
-│   └── README.md             # Instructions for setting up the full dataset
-├── docs/                     # Detailed project documentation
-│   ├── Overview.md           # Detailed background on the project
-│   ├── Methodology.md        # Explanation of attention mechanisms and experiments
-│   ├── Installation.md       # Setup and installation instructions
-│   └── Analysis.md           # How to interpret heatmap and other result analysis
-├── scripts/                  # Scripts for setup and common commands
-│   ├── setup_env.sh          # Sets up environment and installs dependencies
-│   └── run_experiment.sh     # Wrapper script to run main.py with experiment configs
-└── tests/                    # Unit tests for src code
-    ├── test_data_processing.py
-    ├── test_model.py
-    └── test_evaluation.py
+
+2.	Create and activate a virtual environment:
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
-### Folder Descriptions
 
-	•	src/: Contains source code, including data preprocessing, model definitions, and evaluation methods.
-	•	experiment_results/: Includes Jupyter notebooks for experiments and heatmap analysis.
-	•	configs/: Stores configuration files to ensure reproducibility across different experiments.
-
-### Getting Started
-
-#### Prerequisites
-
-Ensure you have Python 3.8+ installed. You can set up the required dependencies using:
-
+3.	Install the required Python packages:
 ```bash
 pip install -r requirements.txt
 ```
+4.	Set up any environment variables or API keys (if applicable). 
 
-#### Configurations
+## How to Obtain the Data You Use
 
-Default configurations are provided in configs/default_config.yaml. Modify this file to customize experiment parameters.
+This project utilizes online datasets that can be accessed and loaded using the datasets package from Hugging Face. The datasets library allows seamless downloading and preprocessing of popular datasets.
+For example:
+```python
+from datasets import load_dataset
+mnli = load_dataset("multi_nli")
+```
 
-### Usage
+For retrieval score calculation, the test cases can be found at https://github.com/nightdessert/Retrieval_Head
 
-To run the main experiment, use:
 
-```python main.py --config configs/default_config.yaml```
+## Reproducing Results
+### Fine-Tuning
 
-Experiment settings (e.g., attention mechanism types, dataset selection) can be adjusted in the config file. The main.py script will load these configurations automatically.
+To reproduce fine-tuning experiments:
+1.	Run the fine-tuning script:
+```bash
+cd experiment  
+python fine-tuning.py
+```
+Modify the configuration file to test different grouped query attention setups (only 4 and 16 are supported).
 
-### Experiments
+2.	Alternatively, run the fine-tuning notebook:
+```bash
+jupyter notebook experiment/fine-tuning_experiment.ipynb
+```
 
-Each experiment is documented in the experiment_results/ folder:
+### Calculate retrieval score
 
-	•	analysis_heatmap.ipynb: Notebook for visualizing attention heatmaps.
-	•	experiment_X.ipynb: Placeholder for specific experiment setups (fine-tuning, different attention types, etc.).
+To get the retrieval score of a model, run 
+```bash
+cd experiment  
+python calculate_retrieval_score.py --s_len 0 --e_len 3000 --peft_model_dir ../results/model/output_peft_model_g=16_e=3
+--last_layer_kv_len 16
+```
+Or change --peft_model_dir to the path to the directory of the stored model. Remember to change --last_layer_kv_len according to the saved model's kv_len in the last layer.
 
+### Needle in a Haystack Experiment
+
+To conduct the needle in a haystack experiment, run 
+```bash
+cd experiment
+python needle_in_haystack_with_mask.py --mask_top 30 --s 0 --e 3000 --model_name meta-llama/Llama-3.2-1B-Instruct --head_score_path ../head_score
+```
+ - --mask_top: the number of heads with the lowest scores to be masked
+ - --head_score_path: path to the stored head score calculated by running calculate_retrieval_score.py
+
+### Evaluate GQA + Retrieval Head Masking
+To conduct the needle in a haystack experiment, run 
+```bash
+cd experiment
+python evaluate.py --peft_model_dir ../results/model/output_peft_model_g=16_e=3 --last_layer_kv_len 16 --head_score_path ../head_score/Llama-3.2-1B-Instruct_g=16_e=3 --maskbottom 5 
+```
+ - --peft_model_dir: path to the saved GQA model
+ - --last_layer_kv_len: group size of the last layer's K and V of the saved model
+ - --head_score_path: path to the stored head score calculated by running calculate_retrieval_score.py
+ - --maskbottom: number of bottom heads to be masked
+
+### Example Plots
+Results and visualizations are stored in the results/plots/ directory. Key files include:  
+	•	Llama-3.2-1B-Instruct_block_top30.png: Top-performing attention heads.  
+	•	llama3.2_head_score.png: Heatmap summarizing head performance.
 ### Results
 
 Results and analysis are documented within each Jupyter notebook. The heatmap visualizations show how attention is distributed across model layers and input sequences, helping us understand how each mechanism interprets the data.
 
-### Contributing
-
-We welcome contributions! Please follow these steps:
-
-	1.	Fork this repository.
-	2.	Create a branch for your feature/experiment (feature/your-feature or experiment/your-experiment).
-	3.	Commit your changes following the commit format: [Type] Short description.
-	4.	Open a pull request for review.
+### Contributiuon
+- Wei Chih (Chris) Chung
+- Ssu Yung Yeh
+- Wei (william) Chang
+- Yen Yu (Angela) Kuo 
