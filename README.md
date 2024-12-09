@@ -36,6 +36,8 @@ from datasets import load_dataset
 mnli = load_dataset("multi_nli")
 ```
 
+For retrieval score calculation, the test cases can be found at https://github.com/nightdessert/Retrieval_Head
+
 
 ## Reproducing Results
 ### Fine-Tuning
@@ -43,6 +45,8 @@ mnli = load_dataset("multi_nli")
 To reproduce fine-tuning experiments:
 1.	Run the fine-tuning script:
 ```bash
+cd experiment  
+python fine-tuning.py
 ```
 Modify the configuration file to test different grouped query attention setups (only 4 and 16 are supported).
 
@@ -50,6 +54,38 @@ Modify the configuration file to test different grouped query attention setups (
 ```bash
 jupyter notebook experiment/fine-tuning_experiment.ipynb
 ```
+
+### Calculate retrieval score
+
+To get the retrieval score of a model, run 
+```bash
+cd experiment  
+python calculate_retrieval_score.py --s_len 0 --e_len 3000 --peft_model_dir ../results/model/output_peft_model_g=16_e=3
+--last_layer_kv_len 16
+```
+Or change --peft_model_dir to the path to the directory of the stored model. Remember to change --last_layer_kv_len according to the saved model's kv_len in the last layer.
+
+### Needle in a Haystack Experiment
+
+To conduct the needle in a haystack experiment, run 
+```bash
+cd experiment
+python needle_in_haystack_with_mask.py --mask_top 30 --s 0 --e 3000 --model_name meta-llama/Llama-3.2-1B-Instruct --head_score_path ../head_score
+```
+ - --mask_top: the number of heads with the lowest scores to be masked
+ - --head_score_path: path to the stored head score calculated by running calculate_retrieval_score.py
+
+### Evaluate GQA + Retrieval Head Masking
+To conduct the needle in a haystack experiment, run 
+```bash
+cd experiment
+python evaluate.py --peft_model_dir ../results/model/output_peft_model_g=16_e=3 --last_layer_kv_len 16 --head_score_path ../head_score/Llama-3.2-1B-Instruct_g=16_e=3 --maskbottom 5 
+```
+ - --peft_model_dir: path to the saved GQA model
+ - --last_layer_kv_len: group size of the last layer's K and V of the saved model
+ - --head_score_path: path to the stored head score calculated by running calculate_retrieval_score.py
+ - --maskbottom: number of bottom heads to be masked
+
 ### Example Plots
 Results and visualizations are stored in the results/plots/ directory. Key files include:  
 	•	Llama-3.2-1B-Instruct_block_top30.png: Top-performing attention heads.  
