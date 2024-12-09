@@ -22,7 +22,8 @@ model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat1
 model.generation_config.temperature = None
 model.generation_config.top_p = None
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+# tokenizer = AutoTokenizer.from_pretrained(model_id)
+
 
 
 model_id = "meta-llama/Llama-3.2-1B-Instruct"
@@ -33,7 +34,10 @@ model.generation_config.temperature = None
 model.generation_config.top_p = None
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
-
+print(tokenizer.pad_token)
+if tokenizer.pad_token is None:
+    # tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+    tokenizer.pad_token = tokenizer.eos_token
 # Load the pre-trained configuration and model
 config = LlamaConfig.from_pretrained(model_id)
 config.num_key_value_heads = 4 # Change as you want. Default: 8
