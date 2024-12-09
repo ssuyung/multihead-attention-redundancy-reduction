@@ -33,6 +33,8 @@ python -u needle_in_haystack.py --s_len 0 --e_len 128000\
 ) 2>&1  | tee logs/eval_llama-2-7b-80k.log
 """
 import argparse
+import sys
+sys.path.append("..")
 from src.NeedleHaystackMasker import LLMNeedleHaystackTester
 
 
@@ -47,6 +49,7 @@ if __name__ == "__main__":
     parser.add_argument('--model_provider', type=str, default="LLaMA", help='which model to use')
     parser.add_argument('--api_key', type=str, default="", help='OpenAI API Key')
     parser.add_argument('--mask_topk', type=int, default=0, help='mask topk heads, input a negative value to mask random heads')
+    parser.add_argument('--head_score_path', type=str, default="../head_score")
     # parser = add_args(parser)
     args = parser.parse_args()
 
@@ -65,7 +68,7 @@ if __name__ == "__main__":
                                 context_lengths_min=args.s_len,
                                 context_lengths_max=args.e_len,
                                 context_lengths_num_intervals = 10,
-                                head_score_path = "head_score"
+                                head_score_path = args.head_score_path
                                  )
 
     ht.start_test(args)

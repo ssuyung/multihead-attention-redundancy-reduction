@@ -9,31 +9,40 @@ Original file is located at
 
 
 #import tiktoken
-import os
-import glob
-import json
 import sys
+sys.path.append('..')
 from src.LLMNeedleHaystackTester import LLMNeedleHaystackTester
 import numpy as np
 import argparse
-from rouge_score import rouge_scorer
-from datetime import datetime, timezone
-from collections import defaultdict
-import time
-import torch
 
-class Args(argparse.Namespace):
-  s_len = 0
-  e_len = 5000
-  model_path="meta-llama/Llama-3.2-1B-Instruct"
-  model_name="meta-llama/Llama-3.2-1B-Instruct"
-  model_name_suffix=None
-  model_provider="LLaMA"
+# class Args(argparse.Namespace):
+#   s_len = 0
+#   e_len = 5000
+#   model_path="meta-llama/Llama-3.2-1B-Instruct"
+#   model_name="meta-llama/Llama-3.2-1B-Instruct"
+#   model_name_suffix=None
+#   model_provider="LLaMA"
+#   peft_model_dir = "../results/model/output_peft_model_g=16_e=3"
+#   last_layer_kv_len = 16
 
-args = Args()
+# args = Args()
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-s', '--s_len', metavar='N', type=int, help='a number')
+parser.add_argument('-e', '--e_len', metavar='N', type=int, help='a number')
+parser.add_argument('--model_path', type=str, default="meta-llama/Llama-3.2-1B-Instruct", help='path to model')
+parser.add_argument('--model_name', type=str, default="meta-llama/Llama-3.2-1B-Instruct", help='name of model')
+parser.add_argument('--model_name_suffix', type=str, default=None, help='name of model')
+parser.add_argument('--model_provider', type=str, default="LLaMA", help='which model to use')
+parser.add_argument('--last_layer_kv_len', type=int, default=8, help='size of group of the last layer')
+parser.add_argument('--head_score_path', type=str, default="../head_score")
+parser.add_argument('--peft_model_dir', type=str, default="../results/model/output_peft_model_g=16_e=3", help='path to the saved peft model')
+
+# parser = add_args(parser)
+args = parser.parse_args()
+# print(args.last_layer_kv_len)
+# exit()
 model_name = args.model_path
-
 
 ht = LLMNeedleHaystackTester(model_name=model_name,
                             model_name_suffix=args.model_name_suffix,
@@ -42,6 +51,9 @@ ht = LLMNeedleHaystackTester(model_name=model_name,
                             save_results=True,
                             context_lengths_min=args.s_len,
                             context_lengths_max=args.e_len,
+                            last_layer_kv_len=args.last_layer_kv_len,
+                            peft_model_dir = args.peft_model_dir
+                            # haystack_dir="/content/drive/MyDrive/retrieval_head/haystack_for_detect",
                             # context_lengths_num_intervals = 3,
                             # document_depth_percent_max = 3
                             )

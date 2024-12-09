@@ -9,24 +9,36 @@ from src.data_processing import import_data
 import json
 import numpy as np
 import copy
-last_layer_kv_len = 4
-model_name = "meta-llama/Llama-3.2-1B-Instruct"
-head_score_path = "../results/head_score"
-mask_topk = 32
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_name', type=str, default="meta-llama/Llama-3.2-1B-Instruct", help='name of model')
+parser.add_argument('--last_layer_kv_len', type=int, default=8, help='size of group of the last layer')
+parser.add_argument('--head_score_path', type=str, default="../head_score")
+parser.add_argument('--peft_model_dir', type=str, default=None, help='path to the saved peft model')
+parser.add_argument('--maskbottom', type=int, default=8, help='number of bottom heads to be masked')
+
+# parser = add_args(parser)
+args = parser.parse_args()
+
+# last_layer_kv_len = 4
+# model_name = "meta-llama/Llama-3.2-1B-Instruct"
+# head_score_path = "../results/head_score"
+# mask_topk = 32
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 
 # Config
-config = AutoConfig.from_pretrained(model_name)
+config = AutoConfig.from_pretrained(args.model_name)
 
 # Dataset
 prompt_train_dataset, prompt_valid_dataset, prompt_test_mm_dataset, prompt_test_m_dataset = import_data(seed=8, train_size=500, valid_size=200, test_size=50)
 
 # Model
 model = AutoModelForCausalLM.from_pretrained(
-    model_name,
+    args.model_name,
     torch_dtype=torch.bfloat16,  # Use bfloat16 for better memory efficiency
     attn_implementation="eager"
 ).to(device).eval()
@@ -35,16 +47,16 @@ model.generation_config.top_p = None
 
 
 # Get bottom heads
-new_model_name = "Llama-3.2-1B-Instruct_g=4_e=5"
-with open(f"{head_score_path}/{new_model_name}.json", "r") as file:
+# new_model_name = args.peft_model_dir.split("/")[-1]
+with open(f"{args.head_score_path}.json", "r") as file:
     stable_block_list =  json.loads(file.readline())
 stable_block_list = [(l[0], np.mean(l[1])) for l in stable_block_list.items()]
 stable_block_list = sorted(stable_block_list, key=lambda x: x[1], reverse=False) 
 block_list = [[int(ll) for ll in l[0].split("-")] for l in stable_block_list]
-if mask_topk > 0:
-    print(f"masking out bottom {mask_topk} retrieval heads")
+if args.maskbottom > 0:
+    print(f"masking out bottom {args.maskbottom} retrieval heads")
 else:
-    print(f"masking out random {-mask_topk}  heads")
+    raise("Invalid maskbottom number in argument")
 
 blk_ls = {}
 for b in block_list:
@@ -57,13 +69,13 @@ for b in block_list:
 #     model.model.layers[i].self_attn = CustomLlamaAttention(config, i).to(device)
 
 # Replace last layer's attention layer with new last_layer_kv_len
-config.num_key_value_heads = last_layer_kv_len
-model.model.layers[15].self_attn = CustomLlamaAttention(config, 15, blk_ls[15][:mask_topk]).to(device)
+config.num_key_value_heads = args.last_layer_kv_len
+model.model.layers[15].self_attn = CustomLlamaAttention(config, 15, blk_ls[15][:args.maskbottom]).to(device)
 print("Model's device: ", model.device)  
 
 # Load the PEFT model configuration
-peft_model_dir = "../results/model/output_peft_model_g=4_e=5"  # Directory where PEFT weights were saved
-model = PeftModel.from_pretrained(model, peft_model_dir).to(device)
+# peft_model_dir = "../results/model/output_peft_model_g=4_e=5"  # Directory where PEFT weights were saved
+if args.peft_model_dir: model = PeftModel.from_pretrained(model, args.peft_model_dir).to(device)
 
 
 # for k, v in blk_ls.items():
