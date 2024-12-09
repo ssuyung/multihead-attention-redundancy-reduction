@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM, AutoCon
 import sys
 import random
 import copy
-from src.CustomAttention import CustomLlamaAttention
+from src.model import CustomLlamaAttention
 # sys.path.append("./faiss_attn/")
 # from src.modeling_llama import LlamaForCausalLM
 # from src.modeling_qwen2 import Qwen2ForCausalLM
