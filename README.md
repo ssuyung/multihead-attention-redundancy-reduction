@@ -11,8 +11,8 @@ In this paper, we discussed the meaning of the attention parameters and their co
 ### Steps to Set Up
 1.	Clone this repository:
 ```bash
-git clone https://github.com/chrischung0327/cs263_final.git
-cd cs263_final
+git clone https://github.com/ssuyung/multihead-attention-redundancy-reduction.git
+cd multihead-attention-redundancy-reduction.git
 ```
 
 2.	Create and activate a virtual environment:
